@@ -1,10 +1,9 @@
 const express = require("express");
-import cors from "cors";
-import bodyParser from "body-parser";
-import { exec } from "child_process";
-import util from "util";
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const { exec } = require("child_process");
+const util = require("util");
 
-const express = require("express");
 const app = express();
 const PORT = 8080;
 
