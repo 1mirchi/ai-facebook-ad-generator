@@ -1,17 +1,18 @@
 {
-  "type": "commonjs",
   "name": "ai-facebook-ad-generator",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered Facebook Ad Generator",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
-    "body-parser": "^1.20.3",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.21.2",
-    "openai": "^4.0.0"
+    "body-parser": "^1.20.2"
   }
 }

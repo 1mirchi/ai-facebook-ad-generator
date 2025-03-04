@@ -1,40 +1,17 @@
+// Import required modules (Use require instead of import)
 const express = require("express");
-import cors from "cors";
-import bodyParser from "body-parser";
+const cors = require("cors");
+const bodyParser = require("body-parser");
 
+// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
-const VARIATION_LIMIT = 5; // Set limit to 5 variations
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware
+app.use(cors()); // Enable CORS
+app.use(bodyParser.json()); // Parse JSON requests
 
-// Debugging Logs
-app.use((req, res, next) => {
-    console.log(`Received ${req.method} request to ${req.url}`);
-    console.log("Request Body:", req.body);
-    next();
-});
-
-// Function to generate 5 ad variations
-const generateVariations = (niche) => {
-    const variations = [];
-
-    for (let i = 1; i <= VARIATION_LIMIT; i++) {
-        variations.push({
-            primary_text: `🚀 Supercharge your ${niche} business today! Unlock growth opportunities. [Variation ${i}]`,
-            headline: `🔥 Exclusive ${niche} Deals! Don't Miss Out! [Variation ${i}]`,
-            description: `Discover top strategies to boost your ${niche} success. Start today! [Variation ${i}]`
-        });
-    }
-    
-    return variations;
-};
-
-// Free API Route
+// API Route - Generate Ad
 app.post("/api/generate-ad", (req, res) => {
     const { niche } = req.body;
 
@@ -47,17 +24,16 @@ app.post("/api/generate-ad", (req, res) => {
     // Generate mock variations
     const adVariations = [
         { primary_text: `Boost your ${niche} business!`, headline: `🔥 Hot ${niche} Deals!`, description: `Get the best strategies to succeed in ${niche}.` },
-        { primary_text: `Dominate the ${niche} market!`, headline: `💡 Exclusive ${niche} Insights`, description: `Unlock high-converting ad copy for ${niche}.` }
+        { primary_text: `Dominate the ${niche} market!`, headline: `💡 Exclusive ${niche} Insights`, description: `Unlock high-converting ad copy for ${niche}.` },
+        { primary_text: `Supercharge your ${niche} marketing!`, headline: `🚀 Grow Your ${niche} Brand`, description: `Achieve high engagement with proven ad strategies.` },
+        { primary_text: `Unlock powerful ${niche} opportunities!`, headline: `📈 High-Performing ${niche} Ads`, description: `Transform your business with effective campaigns.` },
+        { primary_text: `Get more customers in ${niche}!`, headline: `💰 Maximize ${niche} Profits`, description: `Convert leads into sales with expert ad strategies.` }
     ];
 
     res.json({ variations: adVariations });
 });
 
-// Test Route
-app.get("/", (req, res) => {
-    res.send("Free AI Ad Generator is Live!");
-});
-
-app.listen(PORT, () => {
-    console.log(`Free version running on http://localhost:${PORT}`);
+// Start the server
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
