@@ -1,90 +1,63 @@
 const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const { exec } = require("child_process");
-const util = require("util");
+import cors from "cors";
+import bodyParser from "body-parser";
 
 const app = express();
-const PORT = 8080;
-
-app.get("/", (req, res) => {
-  res.send("Test server is working!");
-});
-
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Test server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+const VARIATION_LIMIT = 5; // Set limit to 5 variations
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.json());
 
-const execPromise = util.promisify(exec);
-
-// Debugging: Log every request
+// Debugging Logs
 app.use((req, res, next) => {
-  console.log(`Incoming Request: ${req.method} ${req.url}`);
-  next();
+    console.log(`Received ${req.method} request to ${req.url}`);
+    console.log("Request Body:", req.body);
+    next();
 });
 
-// Function to generate an ad using Ollama
-const generateAd = async (niche) => {
-  try {
-    console.log(`Generating ad for niche: ${niche}`);
-    
-    // Run Ollama as an async command
-    const { stdout, stderr } = await execPromise(
-      `ollama run mistral "Generate a high-converting Facebook ad for a ${niche} business. Include:
-      - Ad Title
-      - Ad Copy
-      - Short Description"`
-    );
+// Function to generate 5 ad variations
+const generateVariations = (niche) => {
+    const variations = [];
 
-    if (stderr) {
-      console.error("Ollama Error:", stderr);
-      throw new Error("Failed to generate ad with Ollama.");
+    for (let i = 1; i <= VARIATION_LIMIT; i++) {
+        variations.push({
+            primary_text: `🚀 Supercharge your ${niche} business today! Unlock growth opportunities. [Variation ${i}]`,
+            headline: `🔥 Exclusive ${niche} Deals! Don't Miss Out! [Variation ${i}]`,
+            description: `Discover top strategies to boost your ${niche} success. Start today! [Variation ${i}]`
+        });
     }
-
-    console.log("Ollama Raw Output:", stdout);
-
-    // Extract Ad Title, Copy, and Description
-    const lines = stdout.trim().split("\n").map(line => line.trim());
-    let title = "Generated Ad Title";
-    let copy = "Generated Ad Copy";
-    let description = "Generated Ad Description";
-
-    lines.forEach(line => {
-      if (line.startsWith("**Ad Title:**")) title = line.replace("**Ad Title:**", "").trim();
-      if (line.startsWith("**Ad Copy:**")) copy = line.replace("**Ad Copy:**", "").trim();
-      if (line.startsWith("**Short Description:**")) description = line.replace("**Short Description:**", "").trim();
-    });
-
-    // Remove extra notes if Ollama includes them
-    description = description.split("Note:")[0].trim();
-
-    return { title, copy, description };
-  } catch (error) {
-    console.error("Error in generating ad:", error.message);
-    throw new Error("Ad generation failed.");
-  }
+    
+    return variations;
 };
 
-// API route for ad generation
-app.post("/api/generate-ad", async (req, res) => {
-  try {
-    console.log("Received Body:", req.body); // 🔥 Log request body
-
+// Free API Route
+app.post("/api/generate-ad", (req, res) => {
     const { niche } = req.body;
+
     if (!niche) {
-      console.error("❌ Missing 'niche' in request body!");
-      return res.status(400).json({ error: "Niche is required." });
+        return res.status(400).json({ error: "Niche is required." });
     }
 
-    console.log(`Generating ad for niche: ${niche}`);
-    const ad = await generateAd(niche);
-    res.json(ad);
-  } catch (error) {
-    console.error("Server Error:", error);
-    res.status(500).json({ error: "Server error." });
-  }
+    console.log(`Generating ads for niche: ${niche}`);
+
+    // Generate mock variations
+    const adVariations = [
+        { primary_text: `Boost your ${niche} business!`, headline: `🔥 Hot ${niche} Deals!`, description: `Get the best strategies to succeed in ${niche}.` },
+        { primary_text: `Dominate the ${niche} market!`, headline: `💡 Exclusive ${niche} Insights`, description: `Unlock high-converting ad copy for ${niche}.` }
+    ];
+
+    res.json({ variations: adVariations });
+});
+
+// Test Route
+app.get("/", (req, res) => {
+    res.send("Free AI Ad Generator is Live!");
+});
+
+app.listen(PORT, () => {
+    console.log(`Free version running on http://localhost:${PORT}`);
 });
