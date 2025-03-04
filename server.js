@@ -1,39 +1,47 @@
-// Import required modules (Use require instead of import)
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { Configuration, OpenAIApi } from "openai";
 
-// Initialize Express app
+dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 5001;
+app.use(cors());
+app.use(express.json());
 
-// Middleware
-app.use(cors()); // Enable CORS
-app.use(bodyParser.json()); // Parse JSON requests
+const openai = new OpenAIApi(
+  new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+);
 
-// API Route - Generate Ad
-app.post("/api/generate-ad", (req, res) => {
+app.post("/generate-ad", async (req, res) => {
+  try {
     const { niche } = req.body;
 
     if (!niche) {
-        return res.status(400).json({ error: "Niche is required." });
+      return res.status(400).json({ error: "Niche is required" });
     }
 
-    console.log(`Generating ads for niche: ${niche}`);
+    const response = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        { role: "system", content: "You are an expert in ad copywriting." },
+        {
+          role: "user",
+          content: `Generate 3 Facebook ad variations for the niche: ${niche}. Each should include a primary text, headline, and description.`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 250,
+    });
 
-    // Generate mock variations
-    const adVariations = [
-        { primary_text: `Boost your ${niche} business!`, headline: `🔥 Hot ${niche} Deals!`, description: `Get the best strategies to succeed in ${niche}.` },
-        { primary_text: `Dominate the ${niche} market!`, headline: `💡 Exclusive ${niche} Insights`, description: `Unlock high-converting ad copy for ${niche}.` },
-        { primary_text: `Supercharge your ${niche} marketing!`, headline: `🚀 Grow Your ${niche} Brand`, description: `Achieve high engagement with proven ad strategies.` },
-        { primary_text: `Unlock powerful ${niche} opportunities!`, headline: `📈 High-Performing ${niche} Ads`, description: `Transform your business with effective campaigns.` },
-        { primary_text: `Get more customers in ${niche}!`, headline: `💰 Maximize ${niche} Profits`, description: `Convert leads into sales with expert ad strategies.` }
-    ];
-
-    res.json({ variations: adVariations });
+    res.json({ ads: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error("Error generating ad:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-// Start the server
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🔥 Server running on port ${PORT}`));
